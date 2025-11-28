@@ -7,19 +7,27 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="#438293"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:ignore="MissingConstraints"
+        android:id="@+id/header"></View>
     <Button
         android:id="@+id/Firstbutton"
-        android:layout_width="50dp"
+        android:layout_width="45dp"
         android:layout_height="50dp"
-        android:text="+"
+        android:text="＋"
         android:padding="0dp"
+        android:layout_margin="3dp"
         android:textSize="30dp"
         android:gravity="center"
-        android:backgroundTint="#808080"
 
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/header"
 
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/header"
 
         />
 
@@ -44,6 +52,15 @@
         android:inputType="text"
         android:background="#e0e0e0"
         ></EditText>
+    <Button
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        app:layout_constraintBottom_toBottomOf="@+id/NewCreateFile"
+        android:text="作成"
+        android:textSize="20dp"
+        android:layout_marginLeft="3dp"
+        android:layout_marginRight="3dp"
+        android:layout_marginBottom="3dp"></Button>
     <View
         android:layout_width="match_parent"
         android:layout_height="3dp"
