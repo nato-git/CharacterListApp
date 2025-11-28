@@ -51,16 +51,20 @@
         android:textSize="25dp"
         android:inputType="text"
         android:background="#e0e0e0"
+        android:textColor="#000000"
+        android:id="@+id/NewFileName"
         ></EditText>
     <Button
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
         app:layout_constraintBottom_toBottomOf="@+id/NewCreateFile"
+        app:layout_constraintStart_toStartOf="@+id/NewCreateFile"
         android:text="作成"
         android:textSize="20dp"
         android:layout_marginLeft="3dp"
         android:layout_marginRight="3dp"
-        android:layout_marginBottom="3dp"></Button>
+        android:layout_marginBottom="3dp"
+        android:id="@+id/NewCreateFileButton"></Button>
     <View
         android:layout_width="match_parent"
         android:layout_height="3dp"

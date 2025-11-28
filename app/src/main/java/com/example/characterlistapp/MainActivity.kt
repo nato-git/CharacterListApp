@@ -24,12 +24,20 @@ class MainActivity : AppCompatActivity() {
         }
 
         val Createfile: TextView = findViewById<TextView>(R.id.NewCreateFile)
-        Createfile.isVisible = false
+        Createfile.isVisible = false    //入力スポット隠す
 
-        val CreateButton: Button = findViewById<Button>(R.id.Firstbutton)
-        CreateButton.setOnClickListener{
+        //入力スポット切り替え
+        val CreateMenuButton: Button = findViewById<Button>(R.id.Firstbutton)
+        CreateMenuButton.setOnClickListener{
             Log.d("buttonmsg","This is a Button")
             Createfile.isVisible = !Createfile.isVisible
+        }
+
+        //ファイル名決定
+        val CreateButtom:Button = findViewById<Button>(R.id.NewCreateFileButton)
+        CreateButtom.setOnClickListener{
+            val FileNameId: EditText = findViewById<EditText>(R.id.NewFileName)
+            val NewFilename: String = FileNameId.text.toString()
         }
     }
 }
