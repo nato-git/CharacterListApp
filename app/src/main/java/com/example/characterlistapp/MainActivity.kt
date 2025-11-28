@@ -12,9 +12,20 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.view.isVisible
-import java.io.File
+import android.util.TypedValue
+import android.graphics.Color
 
 class MainActivity : AppCompatActivity() {
+
+    // dp (Density-independent Pixels) を px (Pixels) に変換するヘルパー関数
+    private fun dpToPx(dp: Int): Int {
+        return TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            dp.toFloat(),
+            resources.displayMetrics
+        ).toInt()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -27,7 +38,7 @@ class MainActivity : AppCompatActivity() {
 
         val Createfile: TextView = findViewById<TextView>(R.id.NewCreateFile)
         val Createbutton: Button = findViewById<Button>(R.id.NewCreateFileButton)
-        Createfile.isVisible = false    //入力スポット隠す
+        Createfile.isVisible = false
         Createbutton.isVisible = false
 
         //入力スポット切り替え
@@ -37,9 +48,7 @@ class MainActivity : AppCompatActivity() {
             Createfile.isVisible = !Createfile.isVisible
             Createbutton.isVisible = !Createbutton.isVisible
             val ClearText: EditText? = findViewById<EditText>(R.id.NewFileName)
-            if(ClearText != null) {
-                ClearText.setText("")
-            }
+            ClearText?.setText("")
         }
 
         //ファイル名決定
@@ -48,20 +57,46 @@ class MainActivity : AppCompatActivity() {
             val FileNameId: EditText? = findViewById<EditText>(R.id.NewFileName)
             if(FileNameId != null) {
                 val NewFilename: String = FileNameId.text.toString()
-                SQLiteFile.addList(applicationContext, NewFilename)
-                Create(NewFilename)
-                FileNameId.setText("")
+                if (NewFilename.isNotBlank()) {
+                    SQLiteFile.addList(applicationContext, NewFilename)
+
+                    // データ数をログに出力
+                    val currentCount = SQLiteFile.getListItemCount(applicationContext)
+                    Log.d("DB_COUNT", "現在のデータ数: $currentCount 件")
+
+                    Create(NewFilename)
+                    FileNameId.setText("")
+                }
             }
         }
     }
 
+    /**
+     * 動的にボタンを作成し、LinearLayoutコンテナに追加します。
+     */
     fun Create(text: String){
-        val layout = findViewById<LinearLayout>(R.id.main)
-        layout.gravity = Gravity.CENTER
-        val texting = TextView(this)
+        // 縦並びのコンテナ (R.id.FileField) を取得
+        val layout = findViewById<LinearLayout>(R.id.FileField)
+
+        val texting = Button(this)
         texting.text = text
-        texting.gravity = Gravity.CENTER
+        texting.gravity = Gravity.START
         texting.textSize = 25F
+
+        // LinearLayout 用の LayoutParams を作成し、マージンを設定
+        val params = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.MATCH_PARENT
+        ).apply {
+            // 各ボタンの上に 10dp のマージンを設定
+            //topMargin = dpToPx(5)
+            // コンテナ内で水平中央に配置
+            gravity = Gravity.CENTER
+        }
+
+        texting.layoutParams = params
+
+        // コンテナに追加すると、XMLの orientation="vertical" に従って縦に並びます
         layout.addView(texting)
     }
 }
