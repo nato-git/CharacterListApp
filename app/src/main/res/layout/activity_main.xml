@@ -23,6 +23,15 @@
         app:layout_constraintEnd_toEndOf="parent"
         tools:ignore="MissingConstraints"
         android:id="@+id/header"></View>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        app:layout_constraintStart_toStartOf="@+id/header"
+        app:layout_constraintEnd_toEndOf="@+id/header"
+        android:text="CharactorList"
+        android:textSize="45dp"
+        android:textColor="#ffffff"
+        android:gravity="center"></TextView>
     <Button
         android:id="@+id/Firstbutton"
         android:layout_width="45dp"

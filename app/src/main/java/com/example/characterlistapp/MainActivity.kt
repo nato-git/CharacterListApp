@@ -1,5 +1,6 @@
 package com.example.characterlistapp
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import androidx.activity.enableEdgeToEdge
@@ -55,8 +56,8 @@ class MainActivity : AppCompatActivity() {
 
         //入力スポット切り替え
         val CreateMenuButton: Button = findViewById<Button>(R.id.Firstbutton)
-        CreateMenuButton.setOnClickListener{
-            Log.d("buttonmsg","Create Menu Button Clicked")
+        CreateMenuButton.setOnClickListener {
+            Log.d("buttonmsg", "Create Menu Button Clicked")
             Createfile.isVisible = !Createfile.isVisible
             Createbutton.isVisible = !Createbutton.isVisible
             val ClearText: EditText? = findViewById<EditText>(R.id.NewFileName)
@@ -64,10 +65,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         //ファイル名決定
-        val CreateButtom:Button = findViewById<Button>(R.id.NewCreateFileButton)
-        CreateButtom.setOnClickListener{
+        val CreateButtom: Button = findViewById<Button>(R.id.NewCreateFileButton)
+        CreateButtom.setOnClickListener {
             val FileNameId: EditText? = findViewById<EditText>(R.id.NewFileName)
-            if(FileNameId != null) {
+            if (FileNameId != null) {
                 val NewFilename: String = FileNameId.text.toString()
                 if (NewFilename.isNotBlank()) {
                     SQLiteFile.addList(applicationContext, NewFilename)
@@ -82,6 +83,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+
     }
 
     /**
@@ -101,13 +103,12 @@ class MainActivity : AppCompatActivity() {
     /**
      * 動的に「ファイル名ボタン」と「削除ボタン」のペアを作成し、メインコンテナに追加します。
      */
-    fun Create(text: String){
+    fun Create(text: String) {
         val mainContainer = findViewById<LinearLayout>(R.id.FileField)
 
         // 1. 水平方向のコンテナを作成 (ファイル名ボタンと削除ボタンを格納するため)
         val horizontalLayout = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
-            // 親コンテナ (FileField) の幅一杯に広げる
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 dpToPx(60) // ボタンの高さを固定 (例: 60dp)
@@ -120,7 +121,7 @@ class MainActivity : AppCompatActivity() {
         // 2. ファイル名表示ボタンの作成
         val texting = Button(this).apply {
             this.text = text
-            this.gravity = Gravity.START // テキストを左寄せ
+            this.gravity = Gravity.END // テキストを右寄せ
             this.textSize = 25F
             this.id = nextButtonId++
             // 幅をできるだけ広げる (Weight 1)
@@ -138,7 +139,8 @@ class MainActivity : AppCompatActivity() {
         val deleteButton = Button(this).apply {
             this.text = "✖"
             this.textSize = 18F
-            this.isVisible = false // 初期状態では非表示
+            // 🔴 修正: isVisible = false の設定を削除し、常に表示されるようにする
+
             // 削除ボタンの色を設定
             val deleteColor = ContextCompat.getColor(context, android.R.color.holo_red_light)
             backgroundTintList = ColorStateList.valueOf(deleteColor)
@@ -149,21 +151,14 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
-        // 4. ファイル名ボタンのクリックリスナー (削除ボタンの表示/非表示を切り替える)
+        // 4. ファイル名ボタンのクリックリスナー (画面遷移や詳細表示などに使用)
         texting.setOnClickListener {
-            // 最後に表示した削除ボタンがあれば非表示にする
-            if (lastClickedDeleteButton != null && lastClickedDeleteButton != deleteButton) {
-                lastClickedDeleteButton?.isVisible = false
-            }
-
-            // 現在の削除ボタンの表示状態をトグルする
-            deleteButton.isVisible = !deleteButton.isVisible
-
-            // 最後に表示したボタンを更新
-            lastClickedDeleteButton = if (deleteButton.isVisible) deleteButton else null
+            Log.d("ButtonEvent", "ファイル ${text} が選択されました。")
+            val intent = Intent(this, OpenFile::class.java)
+            intent.putExtra("FileName",text)
         }
 
-        // 5. 削除ボタンのクリックリスナー (データの削除と画面からの除去)
+        // 5. 削除ボタンのクリックリスナー (データの削除と画面からの除去) はそのまま維持
         deleteButton.setOnClickListener {
             val listNameToDelete = texting.text.toString()
 
@@ -174,7 +169,6 @@ class MainActivity : AppCompatActivity() {
                 // 画面から親コンテナ（水平レイアウト）ごと除去
                 mainContainer.removeView(horizontalLayout)
                 Log.d("Delete", "データとボタンを削除しました: $listNameToDelete")
-                // nextButtonId の管理は複雑になるため、ここでは省略します。
                 lastClickedDeleteButton = null
             } else {
                 Log.e("Delete", "データの削除に失敗しました: $listNameToDelete")
