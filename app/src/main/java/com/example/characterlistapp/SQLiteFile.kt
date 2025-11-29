@@ -1,5 +1,6 @@
 package com.example.characterlistapp
 
+import android.R
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
@@ -66,6 +67,51 @@ class SQLiteFile(context: Context) :
             cursor.close()
             database.close()
             return count
+        }
+
+        fun getListName(context: Context): List<String> {
+            val dbHelper = SQLiteFile(context)
+            val database = dbHelper.readableDatabase
+
+            // 取得したリスト名を格納するリスト
+            val databaseList = mutableListOf<String>()
+
+            // SELECT * FROM TitleFile を実行
+            val cursor = database.rawQuery("SELECT $COLUMN_NAME FROM $TABLE_NAME", null)
+
+            // カーソルを最初の行に移動し、データが存在する間ループ
+            if (cursor.moveToFirst()) {
+                // "name" カラムのインデックスを取得
+                val nameIndex = cursor.getColumnIndex(COLUMN_NAME)
+
+                // データを取得してリストに追加
+                do {
+                    // nameIndex が有効な場合のみデータを取得
+                    if (nameIndex >= 0) {
+                        val listName = cursor.getString(nameIndex)
+                        databaseList.add(listName)
+                    }
+                } while (cursor.moveToNext()) // 次の行に移動
+            }
+
+            cursor.close()
+            database.close()
+            return databaseList
+        }
+        fun deleteList(context: Context, listName: String): Boolean {
+            val dbHelper = SQLiteFile(context)
+            val database = dbHelper.writableDatabase
+
+            // データを削除。削除された行数が result に入ります。
+            val result = database.delete(
+                TABLE_NAME, // テーブル名
+                "$COLUMN_NAME = ?", // WHERE 句
+                arrayOf(listName) // WHERE 句に渡す値
+            )
+
+            database.close()
+            // 1行以上削除されたら成功 (true)
+            return result > 0
         }
     }
 }
