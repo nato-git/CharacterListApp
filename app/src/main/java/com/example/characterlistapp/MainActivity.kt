@@ -80,6 +80,8 @@ class MainActivity : AppCompatActivity() {
                     Create(NewFilename)
 
                     FileNameId.setText("")
+                    Createfile.isVisible = !Createfile.isVisible
+                    Createbutton.isVisible = !Createbutton.isVisible
                 }
             }
         }
@@ -121,7 +123,7 @@ class MainActivity : AppCompatActivity() {
         // 2. ファイル名表示ボタンの作成
         val texting = Button(this).apply {
             this.text = text
-            this.gravity = Gravity.END // テキストを右寄せ
+            this.gravity = Gravity.START
             this.textSize = 25F
             this.id = nextButtonId++
             // 幅をできるだけ広げる (Weight 1)
@@ -156,6 +158,7 @@ class MainActivity : AppCompatActivity() {
             Log.d("ButtonEvent", "ファイル ${text} が選択されました。")
             val intent = Intent(this, OpenFile::class.java)
             intent.putExtra("FileName",text)
+            startActivity(intent)
         }
 
         // 5. 削除ボタンのクリックリスナー (データの削除と画面からの除去) はそのまま維持

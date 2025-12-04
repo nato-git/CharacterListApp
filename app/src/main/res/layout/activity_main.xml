@@ -50,11 +50,11 @@
 
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="500dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         android:text="新しいファイルを作成"
-        android:textSize="25dp"
+        android:textSize="35dp"
         android:id="@+id/NewCreateFile"
         android:background="#ffffff"
         android:textColor="#000000"
@@ -64,9 +64,9 @@
         android:layout_height="50dp"
         app:layout_constraintTop_toTopOf="@+id/NewCreateFile"
         app:layout_constraintStart_toStartOf="@+id/NewCreateFile"
-        android:translationY="35dp"
-        android:layout_marginRight="100dp"
-        android:layout_marginLeft="5dp"
+        android:translationY="60dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginLeft="10dp"
         android:textSize="25dp"
         android:inputType="text"
         android:background="#e0e0e0"
@@ -83,6 +83,8 @@
         android:layout_marginLeft="3dp"
         android:layout_marginRight="3dp"
         android:layout_marginBottom="3dp"
+        android:paddingTop="10dp"
+        android:gravity="center_horizontal"
         android:id="@+id/NewCreateFileButton"></Button>
     <View
         android:layout_width="match_parent"
