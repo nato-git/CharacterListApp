@@ -1,117 +1,249 @@
+// SQLiteFile.kt の最終的な内容
+
 package com.example.characterlistapp
 
-import android.R
+import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-import android.content.ContentValues
+import android.util.Log
 
-class SQLiteFile(context: Context) :
-    SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
-
-    // データベース作成時に一度だけ実行されます
-    override fun onCreate(database: SQLiteDatabase?) {
-        val createTableSQL = "CREATE TABLE IF NOT EXISTS $TABLE_NAME ($COLUMN_NAME TEXT)"
-        database?.execSQL(createTableSQL)
-    }
-
-    override fun onUpgrade(database: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
-        if (oldVersion < newVersion) {
-            database?.execSQL("ALTER TABLE $TABLE_NAME ADD COLUMN $COLUMN_DELETE_FLAG INTEGER DEFAULT 0")
-        }
-    }
+class SQLiteFile(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     companion object {
-        // 定数
-        const val DATABASE_NAME = "CharacterDB"
-        const val DATABASE_VERSION = 1
-        const val TABLE_NAME = "TitleFile"
-        const val COLUMN_NAME = "name"
-        const val COLUMN_DELETE_FLAG = "deleteFlag"
+        private const val DATABASE_NAME = "character_list_db"
+        private const val DATABASE_VERSION = 2
 
-        /**
-         * データベースに新しいリスト名を追加します。
-         */
-        fun addList(context: Context, CreateName: String) {
-            val dbHelper = SQLiteFile(context)
-            val database = dbHelper.writableDatabase
+        // リストタイトルテーブル
+        private const val TABLE_TITLE = "TitleFile"
+        private const val COLUMN_LIST_ID = "list_id"
+        private const val COLUMN_LIST_NAME = "name"
 
-            val values = ContentValues().apply {
-                put(COLUMN_NAME, CreateName)
-            }
+        // キャラクターデータテーブル
+        private const val TABLE_CHARACTER = "CharaFile"
+        private const val COLUMN_CHARA_ID = "chara_id"
+        private const val COLUMN_CHARA_LIST_ID = "list_id"
+        private const val COLUMN_CHARA_NAME = "name"
+        private const val COLUMN_CHARA_CONTENT = "content"
 
-            database.insert(TABLE_NAME, null, values)
-            database.close()
+        // 静的アクセス関数
+        fun addList(context: Context, name: String): Long {
+            return SQLiteFile(context).addListInternal(name)
+        }
+        fun getListInfos(context: Context): List<ListInfo> {
+            return SQLiteFile(context).getListInfosInternal()
+        }
+        fun addCharacter(context: Context, chara: CharaData): Long {
+            return SQLiteFile(context).addCharacterInternal(chara)
+        }
+        fun getCharactersByListId(context: Context, listId: Long): List<CharaData> {
+            return SQLiteFile(context).getCharactersByListIdInternal(listId)
+        }
+        fun getCharacterById(context: Context, charaId: Long): CharaData? {
+            return SQLiteFile(context).getCharacterByIdInternal(charaId)
+        }
+        fun updateCharacter(context: Context, character: CharaData): Int {
+            return SQLiteFile(context).updateCharacterInternal(character)
+        }
+        fun deleteCharacter(context: Context, charaId: Long): Int {
+            return SQLiteFile(context).deleteCharacterInternal(charaId)
         }
 
-        // 🔴 新しく追加した関数: データ数を取得
-        /**
-         * データベース内の全リストの件数を取得します。
-         */
-        fun getListItemCount(context: Context): Int {
-            val dbHelper = SQLiteFile(context)
-            // 読み取り専用でデータベースを開きます
-            val database = dbHelper.readableDatabase
-
-            var count = 0
-            // SELECT COUNT(*) FROM TitleFile クエリを実行します
-            val cursor = database.rawQuery("SELECT COUNT(*) FROM $TABLE_NAME", null)
-
-            // カーソルを最初の行に移動し、結果を取得します
-            if (cursor.moveToFirst()) {
-                // COUNT(*) の結果は0番目のカラムに入っています
-                count = cursor.getInt(0)
-            }
-
-            // カーソルとデータベース接続を閉じます
-            cursor.close()
-            database.close()
-            return count
+        // 👈 新しい静的アクセス関数
+        fun deleteListAndCharacters(context: Context, listId: Long): Boolean {
+            return SQLiteFile(context).deleteListAndCharactersInternal(listId)
         }
+    }
 
-        fun getListName(context: Context): List<String> {
-            val dbHelper = SQLiteFile(context)
-            val database = dbHelper.readableDatabase
+    override fun onCreate(db: SQLiteDatabase?) {
+        db?.execSQL("""
+            CREATE TABLE $TABLE_TITLE (
+                $COLUMN_LIST_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+                $COLUMN_LIST_NAME TEXT NOT NULL UNIQUE
+            )
+        """)
+        db?.execSQL("""
+            CREATE TABLE $TABLE_CHARACTER (
+                $COLUMN_CHARA_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+                $COLUMN_CHARA_LIST_ID INTEGER NOT NULL,
+                $COLUMN_CHARA_NAME TEXT NOT NULL,
+                $COLUMN_CHARA_CONTENT TEXT,
+                FOREIGN KEY($COLUMN_CHARA_LIST_ID) REFERENCES $TABLE_TITLE($COLUMN_LIST_ID) ON DELETE CASCADE
+            )
+        """)
+    }
 
-            // 取得したリスト名を格納するリスト
-            val databaseList = mutableListOf<String>()
+    override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
+        db?.execSQL("DROP TABLE IF EXISTS $TABLE_CHARACTER")
+        db?.execSQL("DROP TABLE IF EXISTS $TABLE_TITLE")
+        onCreate(db)
+    }
 
-            // SELECT * FROM TitleFile を実行
-            val cursor = database.rawQuery("SELECT $COLUMN_NAME FROM $TABLE_NAME", null)
+    override fun onOpen(db: SQLiteDatabase?) {
+        super.onOpen(db)
+        db?.execSQL("PRAGMA foreign_keys=ON;") // 外部キー制約を有効化
+    }
 
-            // カーソルを最初の行に移動し、データが存在する間ループ
-            if (cursor.moveToFirst()) {
-                // "name" カラムのインデックスを取得
-                val nameIndex = cursor.getColumnIndex(COLUMN_NAME)
+    // --- ListInfo (リストタイトル) の操作（内部関数） ---
+    private fun addListInternal(name: String): Long {
+        val db = writableDatabase
+        val values = ContentValues().apply { put(COLUMN_LIST_NAME, name) }
+        val newRowId = db.insert(TABLE_TITLE, null, values)
+        db.close()
+        return newRowId
+    }
 
-                // データを取得してリストに追加
+    private fun getListInfosInternal(): List<ListInfo> {
+        val list = mutableListOf<ListInfo>()
+        val db = readableDatabase
+        val cursor = db.rawQuery("SELECT $COLUMN_LIST_ID, $COLUMN_LIST_NAME FROM $TABLE_TITLE", null)
+
+        cursor.use { c ->
+            if (c.moveToFirst()) {
+                val idIndex = c.getColumnIndex(COLUMN_LIST_ID)
+                val nameIndex = c.getColumnIndex(COLUMN_LIST_NAME)
                 do {
-                    // nameIndex が有効な場合のみデータを取得
-                    if (nameIndex >= 0) {
-                        val listName = cursor.getString(nameIndex)
-                        databaseList.add(listName)
+                    if (idIndex != -1 && nameIndex != -1) {
+                        list.add(ListInfo(c.getLong(idIndex), c.getString(nameIndex)))
                     }
-                } while (cursor.moveToNext()) // 次の行に移動
+                } while (c.moveToNext())
             }
-
-            cursor.close()
-            database.close()
-            return databaseList
         }
-        fun deleteList(context: Context, listName: String): Boolean {
-            val dbHelper = SQLiteFile(context)
-            val database = dbHelper.writableDatabase
+        db.close()
+        return list
+    }
 
-            // データを削除。削除された行数が result に入ります。
-            val result = database.delete(
-                TABLE_NAME, // テーブル名
-                "$COLUMN_NAME = ?", // WHERE 句
-                arrayOf(listName) // WHERE 句に渡す値
+    // --- CharaData (キャラクター) の操作（内部関数） ---
+    private fun addCharacterInternal(chara: CharaData): Long {
+        val db = writableDatabase
+        val values = ContentValues().apply {
+            put(COLUMN_CHARA_LIST_ID, chara.Listid)
+            put(COLUMN_CHARA_NAME, chara.name)
+            put(COLUMN_CHARA_CONTENT, chara.content)
+        }
+        val newRowId = db.insert(TABLE_CHARACTER, null, values)
+        db.close()
+        return newRowId
+    }
+
+    private fun getCharactersByListIdInternal(listId: Long): List<CharaData> {
+        val charaList = mutableListOf<CharaData>()
+        val db = readableDatabase
+        val cursor = db.rawQuery(
+            "SELECT * FROM $TABLE_CHARACTER WHERE $COLUMN_CHARA_LIST_ID = ?",
+            arrayOf(listId.toString())
+        )
+
+        cursor.use { c ->
+            if (c.moveToFirst()) {
+                val idIndex = c.getColumnIndex(COLUMN_CHARA_ID)
+                val nameIndex = c.getColumnIndex(COLUMN_CHARA_NAME)
+                val contentIndex = c.getColumnIndex(COLUMN_CHARA_CONTENT)
+                val listIdIndex = c.getColumnIndex(COLUMN_CHARA_LIST_ID)
+
+                do {
+                    if (idIndex != -1) {
+                        charaList.add(CharaData(
+                            id = c.getLong(idIndex),
+                            Listid = c.getLong(listIdIndex),
+                            name = c.getString(nameIndex),
+                            content = c.getString(contentIndex)
+                        ))
+                    }
+                } while (c.moveToNext())
+            }
+        }
+        db.close()
+        return charaList
+    }
+
+    private fun getCharacterByIdInternal(charaId: Long): CharaData? {
+        val db = readableDatabase
+        val cursor = db.rawQuery(
+            "SELECT * FROM $TABLE_CHARACTER WHERE $COLUMN_CHARA_ID = ?",
+            arrayOf(charaId.toString())
+        )
+        var charaData: CharaData? = null
+
+        cursor.use { c ->
+            if (c.moveToFirst()) {
+                val listIdIndex = c.getColumnIndex(COLUMN_CHARA_LIST_ID)
+                val nameIndex = c.getColumnIndex(COLUMN_CHARA_NAME)
+                val contentIndex = c.getColumnIndex(COLUMN_CHARA_CONTENT)
+
+                if (listIdIndex != -1) {
+                    charaData = CharaData(
+                        id = charaId,
+                        Listid = c.getLong(listIdIndex),
+                        name = c.getString(nameIndex),
+                        content = c.getString(contentIndex)
+                    )
+                }
+            }
+        }
+        db.close()
+        return charaData
+    }
+
+    private fun updateCharacterInternal(character: CharaData): Int {
+        val db = writableDatabase
+        val values = ContentValues().apply {
+            put(COLUMN_CHARA_NAME, character.name)
+            put(COLUMN_CHARA_CONTENT, character.content)
+        }
+        val rowsAffected = db.update(
+            TABLE_CHARACTER, values,
+            "$COLUMN_CHARA_ID = ?", arrayOf(character.id.toString())
+        )
+        db.close()
+        return rowsAffected
+    }
+
+    private fun deleteCharacterInternal(charaId: Long): Int {
+        val db = writableDatabase
+        val rowsAffected = db.delete(
+            TABLE_CHARACTER,
+            "$COLUMN_CHARA_ID = ?", arrayOf(charaId.toString())
+        )
+        db.close()
+        return rowsAffected
+    }
+
+    // 👈 修正されたリストと関連キャラクターの削除メソッド
+    private fun deleteListAndCharactersInternal(listId: Long): Boolean {
+        val db = writableDatabase // DbHelper(context).writableDatabase ではなく、直接使用
+        var result = false
+
+        db.beginTransaction()
+        try {
+            // 1. (ON DELETE CASCADE があるため不要だが、明示的な削除ロジック)
+            // リストに属するすべてのキャラクターを削除
+            db.delete(
+                TABLE_CHARACTER, // TABLE_CHARACTERS -> TABLE_CHARACTER に修正
+                "${COLUMN_CHARA_LIST_ID} = ?", // COLUMN_LIST_ID を使用
+                arrayOf(listId.toString())
             )
 
-            database.close()
-            // 1行以上削除されたら成功 (true)
-            return result > 0
+            // 2. リスト自体を削除
+            val listRowsDeleted = db.delete(
+                TABLE_TITLE, // TABLE_LISTS -> TABLE_TITLE に修正
+                "${COLUMN_LIST_ID} = ?", // COLUMN_ID -> COLUMN_LIST_ID に修正
+                arrayOf(listId.toString())
+            )
+
+            if (listRowsDeleted > 0) {
+                db.setTransactionSuccessful()
+                result = true
+            } else {
+                result = false
+            }
+        } catch (e: Exception) {
+            Log.e("SQLiteFile", "リスト削除エラー: ${e.message}")
+            result = false
+        } finally {
+            db.endTransaction()
+            db.close()
         }
+        return result
     }
 }

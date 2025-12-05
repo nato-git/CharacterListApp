@@ -7,6 +7,25 @@
     android:background="#ffffff"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".OpenFile">
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@+id/Filename"
+        app:layout_constraintBottom_toTopOf="@+id/createText"
+        android:layout_marginTop="3dp"
+        android:id="@+id/character_scroll_area"
+        >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="2dp"
+            android:id="@+id/character_recycler_view"
+            >
+        </LinearLayout>
+    </ScrollView>
+
     <View
         android:layout_width="match_parent"
         android:layout_height="60dp"
@@ -16,6 +35,21 @@
         tools:ignore="MissingConstraints"
         android:id="@+id/header"
         ></View>
+    <Button
+        android:id="@+id/AddCharacterButton"
+        android:layout_width="45dp"
+        android:layout_height="50dp"
+        android:text="＋"
+        android:padding="0dp"
+        android:layout_margin="3dp"
+        android:textSize="30dp"
+        android:gravity="center"
+
+        app:layout_constraintEnd_toEndOf="@+id/header"
+
+        app:layout_constraintTop_toTopOf="@+id/header"
+
+        />
 
     <TextView
         android:layout_width="match_parent"
@@ -55,5 +89,74 @@
         android:layout_height="3dp"
         app:layout_constraintBottom_toBottomOf="@+id/Filename"
         android:background="@color/black"></View>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="500dp"
+        android:background="#ffffff"
+        android:text="新しいキャラを作成"
+        android:textSize="35dp"
+        android:id="@+id/createText"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        ></TextView>
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        app:layout_constraintTop_toTopOf="@+id/createText"
+        app:layout_constraintStart_toStartOf="@+id/createText"
+        android:translationY="60dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginLeft="10dp"
+        android:textSize="25dp"
+        android:inputType="text"
+        android:background="#e0e0e0"
+        android:textColor="#000000"
+        android:id="@+id/NewTextName"
+        ></EditText>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#ffffff"
+        android:text="内容を作成"
+        android:textSize="35dp"
+        app:layout_constraintTop_toBottomOf="@+id/NewTextName"
+        android:translationY="70dp"
+        android:id="@+id/Newcontent"
+        ></TextView>
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="250dp"
+        app:layout_constraintTop_toBottomOf="@+id/Newcontent"
+        android:translationY="70dp"
+        android:gravity="start"
+        android:text=""
+        android:inputType="textMultiLine"
+        android:background="#e0e0e0"
+        android:layout_marginRight="10dp"
+        android:layout_marginLeft="10dp"
+        android:textSize="25dp"
+        android:textColor="#000000"
+        android:id="@+id/NewTextContent"></EditText>
+
+    <Button
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        app:layout_constraintBottom_toBottomOf="@+id/createText"
+        app:layout_constraintStart_toStartOf="@+id/createText"
+        android:text="作成"
+        android:textSize="20dp"
+        android:layout_marginLeft="3dp"
+        android:layout_marginRight="3dp"
+        android:layout_marginBottom="3dp"
+        android:paddingTop="10dp"
+        android:gravity="center_horizontal"
+        android:id="@+id/NewCreateTextButton"></Button>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="5dp"
+        android:background="@color/black"
+        app:layout_constraintBottom_toTopOf="@+id/createText"
+        ></View>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

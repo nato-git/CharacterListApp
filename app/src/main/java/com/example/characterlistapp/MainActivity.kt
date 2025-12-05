@@ -1,40 +1,27 @@
 package com.example.characterlistapp
 
+import android.R.attr.textColor
 import android.content.Intent
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Bundle
-import android.widget.Button
+import android.view.ViewGroup
+import android.widget.*
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import android.util.Log
-import android.view.Gravity
-import android.widget.EditText
-import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.core.view.isVisible
-import android.util.TypedValue
-import android.content.res.ColorStateList
-import androidx.core.content.ContextCompat
+// import androidx.recyclerview.widget.RecyclerView // 👈 RecyclerViewのimportは不要になりました
 
 class MainActivity : AppCompatActivity() {
 
-    // 次に動的に生成するボタンに割り当てる一意のIDを追跡するカウンター
-    private var nextButtonId = 1000
-
-    // 最後に表示した削除ボタンを保持するための変数（一つだけ表示させるため）
-    private var lastClickedDeleteButton: Button? = null
-
-    /**
-     * dp (Density-independent Pixels) を px (Pixels) に変換するヘルパー関数
-     */
-    private fun dpToPx(dp: Int): Int {
-        return TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_DIP,
-            dp.toFloat(),
-            resources.displayMetrics
-        ).toInt()
-    }
+    private lateinit var createListLayout: TextView
+    private lateinit var newListNameEditText: EditText
+    private lateinit var createListButton: Button
+    private lateinit var listContainer: LinearLayout // 👈 LinearLayoutとして使用
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,141 +33,157 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        val Createfile: TextView = findViewById<TextView>(R.id.NewCreateFile)
-        val Createbutton: Button = findViewById<Button>(R.id.NewCreateFileButton)
-        Createfile.isVisible = false
-        Createbutton.isVisible = false
+        // 1. UI要素の初期化
+        listContainer = findViewById(R.id.FileField)
+        createListLayout = findViewById(R.id.NewCreateFile)
+        newListNameEditText = findViewById(R.id.NewFileName)
+        createListButton = findViewById(R.id.NewCreateFileButton)
+        val showCreateButton: Button = findViewById(R.id.Firstbutton)
 
-        // 起動時に既存のファイル名に基づいてボタンを全て生成する
-        loadExistingButtons()
+        createListLayout.isVisible = false
+        createListButton.isVisible = false
 
-        //入力スポット切り替え
-        val CreateMenuButton: Button = findViewById<Button>(R.id.Firstbutton)
-        CreateMenuButton.setOnClickListener {
-            Log.d("buttonmsg", "Create Menu Button Clicked")
-            Createfile.isVisible = !Createfile.isVisible
-            Createbutton.isVisible = !Createbutton.isVisible
-            val ClearText: EditText? = findViewById<EditText>(R.id.NewFileName)
-            ClearText?.setText("")
+        // 2. 新規作成エリアの表示切り替え
+        showCreateButton.setOnClickListener {
+            createListLayout.isVisible = !createListLayout.isVisible
+            createListButton.isVisible = !createListButton.isVisible
+            if (createListLayout.isVisible) {
+                newListNameEditText.setText("")
+                newListNameEditText.requestFocus()
+            }
         }
 
-        //ファイル名決定
-        val CreateButtom: Button = findViewById<Button>(R.id.NewCreateFileButton)
-        CreateButtom.setOnClickListener {
-            val FileNameId: EditText? = findViewById<EditText>(R.id.NewFileName)
-            if (FileNameId != null) {
-                val NewFilename: String = FileNameId.text.toString()
-                if (NewFilename.isNotBlank()) {
-                    SQLiteFile.addList(applicationContext, NewFilename)
+        // 3. リスト作成ボタンの処理
+        createListButton.setOnClickListener {
+            createNewList()
+        }
 
-                    val currentCount = SQLiteFile.getListItemCount(applicationContext)
-                    Log.d("DB_COUNT", "現在のデータ数: $currentCount 件")
+        // 4. 既存リストの読み込みと表示
+        loadExistingLists()
+    }
 
-                    // 新しく追加された項目に対してボタンを生成
-                    Create(NewFilename)
+    private fun createNewList() {
+        val listName = newListNameEditText.text.toString().trim()
+        if (listName.isBlank()) {
+            Toast.makeText(this, "リスト名を入力してください。", Toast.LENGTH_SHORT).show()
+            return
+        }
 
-                    FileNameId.setText("")
-                    Createfile.isVisible = !Createfile.isVisible
-                    Createbutton.isVisible = !Createbutton.isVisible
+        val newRowId = SQLiteFile.addList(applicationContext, listName)
+
+        if (newRowId > 0) {
+            Toast.makeText(this, "'$listName' を作成しました。", Toast.LENGTH_SHORT).show()
+            createListLayout.isVisible = false
+            newListNameEditText.setText("")
+            loadExistingLists()
+        } else {
+            Toast.makeText(this, "リストの作成に失敗しました。", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    /**
+     * データベースからリストを取得し、Buttonとして listContainer に動的に追加します。
+     * 👈 元の動的追加方式に戻しました。
+     */
+    private fun loadExistingLists() {
+        listContainer.removeAllViews() // 既存のViewを全て削除
+        val listInfos = SQLiteFile.getListInfos(applicationContext)
+
+        listInfos.forEach { listInfo ->
+
+            // 1. 各リスト項目を保持するための水平方向のコンテナを作成
+            val listRowLayout = LinearLayout(this).apply {
+                layoutParams = LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+                orientation = LinearLayout.HORIZONTAL // ボタンと削除ボタンを横に並べる
+                setPadding(0, 8, 0, 8) // 上下にパディングを設定
+            }
+
+            // 2. リスト名ボタンを作成 (幅を flexible に設定)
+            val listButton = Button(this).apply {
+                // 幅を0dpにし、weight(重み)を1に設定することで、削除ボタンの残りスペースいっぱいに広がるようにする
+                layoutParams = LinearLayout.LayoutParams(
+                    0,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    1.0f // 重み1.0で、削除ボタンより優先して幅を取る
+                )
+                text = listInfo.name // リスト名を設定
+                textSize = 18f
+                gravity = left
+                backgroundTintList = ColorStateList.valueOf(Color.CYAN)
+                setTextColor(resources.getColor(android.R.color.black))
+            }
+
+            // リスト名ボタンのクリックリスナー (OpenFileへ遷移)
+            listButton.setOnClickListener {
+                val intent = Intent(this, OpenFile::class.java).apply {
+                    putExtra("LIST_ID", listInfo.id)
+                    putExtra("LIST_NAME", listInfo.name)
                 }
+                startActivity(intent)
             }
-        }
 
+            // 3. 削除ボタンを作成
+            val deleteButton = Button(this).apply {
+                // 幅と高さを WRAP_CONTENT に設定
+                layoutParams = LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    setMargins(10, 0, 0, 0) // リスト名ボタンとの間にマージンを設定
+                }
+                text = "削除" // ボタンテキスト
+                textSize = 16f
+                backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(context, android.R.color.holo_red_dark))
+            }
+
+            // 削除ボタンのクリックリスナー (確認ダイアログを表示)
+            deleteButton.setOnClickListener {
+                showDeleteConfirmationDialog(listInfo.id, listInfo.name)
+            }
+
+            // 4. コンテナにボタンを追加
+            listRowLayout.addView(listButton)
+            listRowLayout.addView(deleteButton)
+
+            // 5. メインコンテナにリスト行を追加
+            listContainer.addView(listRowLayout)
+        }
     }
 
     /**
-     * データベースから全てのリスト名を取得し、ボタンとして画面に描画します。
+     * リスト削除の確認ダイアログを表示する
      */
-    private fun loadExistingButtons() {
-        val listNames = SQLiteFile.getListName(applicationContext)
+    private fun showDeleteConfirmationDialog(listId: Long, listName: String) {
+        AlertDialog.Builder(this)
+            .setTitle("リスト削除の確認")
+            .setMessage("本当にリスト「$listName」を削除しますか？\nこのリスト内のキャラクターデータもすべて削除されます。")
+            .setPositiveButton("削除") { dialog, which ->
+                // 削除処理を実行
+                performDeleteList(listId, listName)
+            }
+            .setNegativeButton("キャンセル", null)
+            .show()
+    }
 
-        // 取得したリスト名に基づいてボタンを生成
-        for (name in listNames) {
-            // Create 関数が nextButtonId をインクリメントしながら ID を割り当ててくれます
-            Create(name)
+    /**
+     * 実際にリストと関連キャラクターを削除する処理
+     */
+    private fun performDeleteList(listId: Long, listName: String) {
+        val success = SQLiteFile.deleteListAndCharacters(applicationContext, listId) // 仮定: SQLiteFileにこのメソッドがある
+
+        if (success) {
+            Toast.makeText(this, "リスト「$listName」と関連キャラクターを削除しました。", Toast.LENGTH_SHORT).show()
+            loadExistingLists() // リストを再読み込みして画面を更新
+        } else {
+            Toast.makeText(this, "削除に失敗しました。", Toast.LENGTH_SHORT).show()
         }
     }
 
-
-    /**
-     * 動的に「ファイル名ボタン」と「削除ボタン」のペアを作成し、メインコンテナに追加します。
-     */
-    fun Create(text: String) {
-        val mainContainer = findViewById<LinearLayout>(R.id.FileField)
-
-        // 1. 水平方向のコンテナを作成 (ファイル名ボタンと削除ボタンを格納するため)
-        val horizontalLayout = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                dpToPx(60) // ボタンの高さを固定 (例: 60dp)
-            ).apply {
-                topMargin = dpToPx(5) // 各行の縦の間隔
-                gravity = Gravity.CENTER_HORIZONTAL
-            }
-        }
-
-        // 2. ファイル名表示ボタンの作成
-        val texting = Button(this).apply {
-            this.text = text
-            this.gravity = Gravity.START
-            this.textSize = 25F
-            this.id = nextButtonId++
-            // 幅をできるだけ広げる (Weight 1)
-            layoutParams = LinearLayout.LayoutParams(
-                0, // width: 0dp
-                LinearLayout.LayoutParams.MATCH_PARENT, // height: match_parent
-                1.0f // weight: 1.0f
-            )
-            // 背景色を設定
-            val buttonColor = ContextCompat.getColor(context, android.R.color.holo_blue_light)
-            backgroundTintList = ColorStateList.valueOf(buttonColor)
-        }
-
-        // 3. 削除ボタン (Delete Button) の作成
-        val deleteButton = Button(this).apply {
-            this.text = "✖"
-            this.textSize = 18F
-            // 🔴 修正: isVisible = false の設定を削除し、常に表示されるようにする
-
-            // 削除ボタンの色を設定
-            val deleteColor = ContextCompat.getColor(context, android.R.color.holo_red_light)
-            backgroundTintList = ColorStateList.valueOf(deleteColor)
-            // 幅を小さく固定
-            layoutParams = LinearLayout.LayoutParams(
-                dpToPx(60), // width: 60dp
-                LinearLayout.LayoutParams.MATCH_PARENT // height: match_parent
-            )
-        }
-
-        // 4. ファイル名ボタンのクリックリスナー (画面遷移や詳細表示などに使用)
-        texting.setOnClickListener {
-            Log.d("ButtonEvent", "ファイル ${text} が選択されました。")
-            val intent = Intent(this, OpenFile::class.java)
-            intent.putExtra("FileName",text)
-            startActivity(intent)
-        }
-
-        // 5. 削除ボタンのクリックリスナー (データの削除と画面からの除去) はそのまま維持
-        deleteButton.setOnClickListener {
-            val listNameToDelete = texting.text.toString()
-
-            // データベースから削除
-            val success = SQLiteFile.deleteList(applicationContext, listNameToDelete)
-
-            if (success) {
-                // 画面から親コンテナ（水平レイアウト）ごと除去
-                mainContainer.removeView(horizontalLayout)
-                Log.d("Delete", "データとボタンを削除しました: $listNameToDelete")
-                lastClickedDeleteButton = null
-            } else {
-                Log.e("Delete", "データの削除に失敗しました: $listNameToDelete")
-            }
-        }
-
-        // 6. ビューをコンテナに追加し、メインレイアウトに追加
-        horizontalLayout.addView(texting)
-        horizontalLayout.addView(deleteButton)
-        mainContainer.addView(horizontalLayout)
+    override fun onResume() {
+        super.onResume()
+        loadExistingLists()
     }
 }
