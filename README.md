@@ -11,16 +11,7 @@ CharacterListAppは、キャラクターの一覧管理を目的としたシン�
 
 ## インストール方法
 
-1. このリポジトリをクローンします。
-    ```bash
-    git clone https://github.com/nato-git/CharacterListApp.git
-    ```
-2. プロジェクトディレクトリに移動します。
-    ```bash
-    cd CharacterListApp
-    ```
-3. 必要な依存パッケージをインストールします。
-    （使用する言語やフレームワークによってコマンドを記載してください）
+リリースノートにあるCRL.zipファイルをダウンロード&解凍してください。
 
 ## 使用方法
 
@@ -29,7 +20,7 @@ CharacterListAppは、キャラクターの一覧管理を目的としたシン�
 
 ## 貢献について
 
-バグ報告・機能要望・プルリクエストは歓迎します。詳細は [CONTRIBUTING.md](CONTRIBUTING.md) をご確認ください。
+バグ報告・機能要望は歓迎します。詳細は [CONTRIBUTING.md](CONTRIBUTING.md) をご確認ください。
 
 ## ライセンス
 
