@@ -203,5 +203,6 @@ class OpenFile : AppCompatActivity() {
             putExtra("LIST_NAME", listName)
         }
         startActivity(intent)
+        finish()
     }
 }

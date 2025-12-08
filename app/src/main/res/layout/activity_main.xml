@@ -28,7 +28,7 @@
         android:layout_height="60dp"
         app:layout_constraintStart_toStartOf="@+id/header"
         app:layout_constraintEnd_toEndOf="@+id/header"
-        android:text="CharacterList"
+        android:text="CRl"
         android:textSize="45dp"
         android:textColor="#ffffff"
         android:gravity="center"></TextView>
