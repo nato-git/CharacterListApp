@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
+import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.activity.enableEdgeToEdge
@@ -138,6 +139,13 @@ class MainActivity : AppCompatActivity() {
                 text = "削除" // ボタンテキスト
                 textSize = 16f
                 backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(context, android.R.color.holo_red_dark))
+            }
+
+            val shareButton = Button(this).apply {
+                layoutParams = LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
             }
 
             // 削除ボタンのクリックリスナー (確認ダイアログを表示)
