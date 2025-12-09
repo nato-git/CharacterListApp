@@ -145,7 +145,12 @@ class MainActivity : AppCompatActivity() {
                 layoutParams = LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT
-                )
+                ).apply {
+                    setMargins(10,0,0,0)
+                }
+                text = "共有" //共有ボタンテキスト
+                textSize = 16f
+                backgroundTintList = ColorStateList.valueOf(Color.CYAN)
             }
 
             // 削除ボタンのクリックリスナー (確認ダイアログを表示)
@@ -153,9 +158,15 @@ class MainActivity : AppCompatActivity() {
                 showDeleteConfirmationDialog(listInfo.id, listInfo.name)
             }
 
+            // 共有ボタンのクリックリスナー
+            shareButton.setOnClickListener {
+                shareSendData()
+            }
+
             // 4. コンテナにボタンを追加
             listRowLayout.addView(listButton)
             listRowLayout.addView(deleteButton)
+            listRowLayout.addView(shareButton)
 
             // 5. メインコンテナにリスト行を追加
             listContainer.addView(listRowLayout)
@@ -194,5 +205,12 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         loadExistingLists()
+    }
+
+    /**
+     * ファイルをjsonファイルに変換する処理
+     */
+    private fun shareSendData(listId: Long, listName: String){
+
     }
 }
