@@ -15,7 +15,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
-// import androidx.recyclerview.widget.RecyclerView // 👈 RecyclerViewのimportは不要になりました
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 
 class MainActivity : AppCompatActivity() {
 
@@ -85,7 +86,6 @@ class MainActivity : AppCompatActivity() {
 
     /**
      * データベースからリストを取得し、Buttonとして listContainer に動的に追加します。
-     * 👈 元の動的追加方式に戻しました。
      */
     private fun loadExistingLists() {
         listContainer.removeAllViews() // 既存のViewを全て削除
@@ -160,7 +160,7 @@ class MainActivity : AppCompatActivity() {
 
             // 共有ボタンのクリックリスナー
             shareButton.setOnClickListener {
-                shareSendData()
+                shareSendData(listInfo.id)
             }
 
             // 4. コンテナにボタンを追加
@@ -210,7 +210,14 @@ class MainActivity : AppCompatActivity() {
     /**
      * ファイルをjsonファイルに変換する処理
      */
-    private fun shareSendData(listId: Long, listName: String){
-
+    private fun shareSendData(listId: Long){
+        val database = SQLiteFile.getCharactersByListId(applicationContext,listId)
+        val json = Json.encodeToString(database)
+        val intent = Intent().apply {
+            action = Intent.ACTION_SEND
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, json)
+        }
+        startActivity(intent)
     }
 }
