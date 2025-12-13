@@ -1,29 +1,37 @@
 package com.example.characterlistapp
 
-import android.R.attr.textColor
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
-import android.view.View
+import android.util.Log
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.Button
+import android.widget.EditText
+import android.widget.ImageButton
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.encodeToString
+import java.io.File
+import java.io.FileWriter
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var createListLayout: TextView
     private lateinit var newListNameEditText: EditText
     private lateinit var createListButton: Button
-    private lateinit var listContainer: LinearLayout // 👈 LinearLayoutとして使用
+    private lateinit var listContainer: LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,11 +44,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         // 1. UI要素の初期化
-        listContainer = findViewById(R.id.FileField)
-        createListLayout = findViewById(R.id.NewCreateFile)
-        newListNameEditText = findViewById(R.id.NewFileName)
-        createListButton = findViewById(R.id.NewCreateFileButton)
-        val showCreateButton: Button = findViewById(R.id.Firstbutton)
+        listContainer = findViewById<LinearLayout>(R.id.FileField)
+        createListLayout = findViewById<TextView>(R.id.NewCreateFile)
+        newListNameEditText = findViewById<EditText>(R.id.NewFileName)
+        createListButton = findViewById<Button>(R.id.NewCreateFileButton)
+        val showCreateButton: Button = findViewById<Button>(R.id.Firstbutton)
 
         createListLayout.isVisible = false
         createListButton.isVisible = false
@@ -134,23 +142,23 @@ class MainActivity : AppCompatActivity() {
                     ViewGroup.LayoutParams.WRAP_CONTENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT
                 ).apply {
-                    setMargins(10, 0, 0, 0) // リスト名ボタンとの間にマージンを設定
+                    setMargins(5, 0, 0, 0) // リスト名ボタンとの間にマージンを設定
                 }
                 text = "削除" // ボタンテキスト
                 textSize = 16f
                 backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(context, android.R.color.holo_red_dark))
             }
 
-            val shareButton = Button(this).apply {
+            val shareButton = ImageButton(this).apply {
                 layoutParams = LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
                 ).apply {
-                    setMargins(10,0,0,0)
+                    setMargins(0,0,0,0)
                 }
-                text = "共有" //共有ボタンテキスト
-                textSize = 16f
-                backgroundTintList = ColorStateList.valueOf(Color.CYAN)
+                setImageResource(R.drawable.share)
+                setScaleType(ImageView.ScaleType.FIT_CENTER)
+                backgroundTintList = ColorStateList.valueOf((ContextCompat.getColor(context,android.R.color.white)))
             }
 
             // 削除ボタンのクリックリスナー (確認ダイアログを表示)
@@ -210,14 +218,44 @@ class MainActivity : AppCompatActivity() {
     /**
      * ファイルをjsonファイルに変換する処理
      */
-    private fun shareSendData(listId: Long){
-        val database = SQLiteFile.getCharactersByListId(applicationContext,listId)
-        val json = Json.encodeToString(database)
-        val intent = Intent().apply {
-            action = Intent.ACTION_SEND
-            type = "text/plain"
-            putExtra(Intent.EXTRA_TEXT, json)
+    private fun shareSendData(listId: Long) {
+        val listName = SQLiteFile.getListInfos(applicationContext).find { it.id == listId }?.name ?: "CharacterList"
+        val fileName = "${listName.replace(" ", "_")}.json"
+
+        try {
+            // 1. データベースからデータを取得
+            val characters = SQLiteFile.getCharactersByListId(applicationContext, listId)
+            val jsonString = Json.encodeToString<List<CharaData>>(characters)
+
+            val cachePath = File(cacheDir, "shared_files")
+            if (!cachePath.exists()) cachePath.mkdirs() // ディレクトリがなければ作成
+
+            val file = File(cachePath, fileName)
+            FileWriter(file).use { writer ->
+                writer.write(jsonString)
+            }
+
+            // 3. FileProviderを使ってURIを取得
+            val contentUri = FileProvider.getUriForFile(
+                this,
+                "${applicationContext.packageName}.fileprovider", // AndroidManifestで定義したauthoritiesと一致させる
+                file
+            )
+
+            // 4. URIとファイルタイプを指定して共有インテントを作成
+            val shareIntent = Intent().apply {
+                action = Intent.ACTION_SEND
+                putExtra(Intent.EXTRA_STREAM, contentUri) // 👈 ファイルURIを渡す
+                type = "application/json" // 👈 JSONファイルタイプを指定
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION) // 受信側のアプリに読み取り権限を一時的に付与
+            }
+
+            // 5. 共有アプリ選択画面を起動
+            startActivity(Intent.createChooser(shareIntent, "JSONファイルを共有"))
+
+        } catch (e: Exception) {
+            Toast.makeText(this, "共有ファイルの作成に失敗しました: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+            e.printStackTrace()
         }
-        startActivity(intent)
     }
 }

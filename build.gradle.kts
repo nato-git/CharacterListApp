@@ -1,5 +1,10 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+// プロジェクトルートの build.gradle.kts
 plugins {
-    alias(libs.plugins.android.application) apply false
-    alias(libs.plugins.kotlin.android) apply false
+    // 👈 これが抜けていると、古い方式（BaseVariantが必要な古いAGP）を探しに行ってしまいます
+    id("com.android.application") version "8.13.2" apply false
+    id("com.android.library") version "8.13.2" apply false
+    
+    // Kotlin本体とSerializationのバージョンを 2.0.21 で統一
+    id("org.jetbrains.kotlin.android") version "2.0.21" apply false
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.0.21" apply false
 }
