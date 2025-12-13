@@ -4,6 +4,7 @@ import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
+import android.provider.DocumentsContract
 import android.util.Log
 import android.view.ViewGroup
 import android.widget.Button
@@ -14,6 +15,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -23,8 +25,13 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
+import org.w3c.dom.Document
 import java.io.File
 import java.io.FileWriter
+import android.net.Uri
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import android.provider.OpenableColumns
 
 class MainActivity : AppCompatActivity() {
 
@@ -49,6 +56,7 @@ class MainActivity : AppCompatActivity() {
         newListNameEditText = findViewById<EditText>(R.id.NewFileName)
         createListButton = findViewById<Button>(R.id.NewCreateFileButton)
         val showCreateButton: Button = findViewById<Button>(R.id.Firstbutton)
+        val downLoadButton: ImageButton = findViewById<ImageButton>(R.id.DownLoadButton)
 
         createListLayout.isVisible = false
         createListButton.isVisible = false
@@ -66,6 +74,10 @@ class MainActivity : AppCompatActivity() {
         // 3. リスト作成ボタンの処理
         createListButton.setOnClickListener {
             createNewList()
+        }
+
+        downLoadButton.setOnClickListener {
+            openFilePicker()
         }
 
         // 4. 既存リストの読み込みと表示
@@ -256,6 +268,67 @@ class MainActivity : AppCompatActivity() {
         } catch (e: Exception) {
             Toast.makeText(this, "共有ファイルの作成に失敗しました: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
             e.printStackTrace()
+        }
+    }
+    /**
+     * jsonファイルからファイルを読み込む処理
+     */
+
+    private val importFileLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            // 1. Uriからファイル名を取得する
+            val fileName = getFileName(it)
+            // 2. 拡張子 (.json) を取り除く
+            val listName = fileName.substringBeforeLast(".")
+
+            // 3. 取得した名前を渡してインポート実行
+            importJsonFromUri(it, listName)
+        }
+    }
+    private fun getFileName(uri: Uri): String {
+        var result: String? = null
+        if (uri.scheme == "content") {
+            val cursor = contentResolver.query(uri, null, null, null, null)
+            cursor?.use {
+                if (it.moveToFirst()) {
+                    val index = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                    if (index != -1) result = it.getString(index)
+                }
+            }
+        }
+        if (result == null) {
+            result = uri.path
+            val cut = result?.lastIndexOf('/') ?: -1
+            if (cut != -1) result = result?.substring(cut + 1)
+        }
+        return result ?: "不明なファイル"
+    }
+
+    private fun openFilePicker() {
+        // 全てのファイル形式ではなく JSON のみを選択対象にする
+        importFileLauncher.launch("application/json")
+    }
+
+    // 3. 選択されたURI（パス）からデータを読み込む
+    private fun importJsonFromUri(uri: Uri, newListName: String) {
+        try {
+            val inputStream = contentResolver.openInputStream(uri)
+            val jsonString = inputStream?.bufferedReader()?.use { it.readText() } ?: return
+
+            // JSONをリストに変換
+            val importedList = Json.decodeFromString<List<CharaData>>(jsonString)
+
+            // データベースに保存（引数にnewListNameを渡す）
+            val success = SQLiteFile.importCharacters(this, newListName, importedList)
+
+            if (success) {
+                Toast.makeText(this, "「$newListName」としてインポートしました", Toast.LENGTH_SHORT).show()
+                loadExistingLists()
+            }
+        } catch (e: Exception) {
+            Toast.makeText(this, "インポート失敗: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }
 }

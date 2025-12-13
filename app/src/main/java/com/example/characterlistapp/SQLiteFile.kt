@@ -53,6 +53,39 @@ class SQLiteFile(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
         fun deleteListAndCharacters(context: Context, listId: Long): Boolean {
             return SQLiteFile(context).deleteListAndCharactersInternal(listId)
         }
+
+        fun importCharacters(context: Context, newListName: String, charaList: List<CharaData>): Boolean {
+            val dbHelper = SQLiteFile(context)
+            val db = dbHelper.writableDatabase
+            var result = false
+
+            db.beginTransaction() // 失敗時に元に戻せるようトランザクション開始
+            try {
+                // 1. 新しいリスト（親）を作成
+                val listValues = ContentValues().apply { put(COLUMN_LIST_NAME, newListName) }
+                val newListId = db.insert(TABLE_TITLE, null, listValues)
+
+                if (newListId != -1L) {
+                    // 2. 各キャラクターを新しいリストIDに紐付けて保存
+                    for (chara in charaList) {
+                        val charaValues = ContentValues().apply {
+                            put(COLUMN_CHARA_LIST_ID, newListId)
+                            put(COLUMN_CHARA_NAME, chara.name)
+                            put(COLUMN_CHARA_CONTENT, chara.content)
+                        }
+                        db.insert(TABLE_CHARACTER, null, charaValues)
+                    }
+                    db.setTransactionSuccessful()
+                    result = true
+                }
+            } catch (e: Exception) {
+                Log.e("SQLiteFile", "Import Error: ${e.message}")
+            } finally {
+                db.endTransaction()
+                db.close()
+            }
+            return result
+        }
     }
 
     override fun onCreate(db: SQLiteDatabase?) {

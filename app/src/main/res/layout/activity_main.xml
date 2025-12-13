@@ -41,12 +41,22 @@
         android:layout_margin="3dp"
         android:textSize="30dp"
         android:gravity="center"
-
         app:layout_constraintEnd_toEndOf="@+id/header"
-
         app:layout_constraintTop_toTopOf="@+id/header"
-
         />
+
+    <ImageButton
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginBottom="10dp"
+        android:paddingTop="10dp"
+        android:src="@drawable/dwld"
+        android:foregroundGravity="center"
+        android:backgroundTint="#ffffff"
+        app:layout_constraintStart_toStartOf="@+id/header"
+        android:id="@+id/DownLoadButton"
+        ></ImageButton>
 
     <TextView
         android:layout_width="match_parent"
