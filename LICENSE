@@ -1,21 +1,21 @@
-MIT License
+Copyright (c) 2025 nato-git. All rights reserved.
 
-Copyright (c) 2025 nato-git
+本ソフトウェア（以下「本ソフトウェア」）は、著作権者およびそのライセンサー（以下「著作権者等」）が所有するプロプライエタリソフトウェアです。本ライセンスは、本ソフトウェアの使用条件を定めるものであり、本ライセンスにより明示的に許諾されていない一切の行為は禁じられます。
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+1. 許諾
+著作権者等は、ユーザーに対し、本ソフトウェアを実行するための限定的な使用権（非独占的、譲渡不可）を付与します。本ライセンスに明示的に定められた場合を除き、ソースコードの複製、配布、頒布、販売、サブライセンス、改変、逆コンパイル、逆アセンブル、リバースエンジニアリングおよび派生物の作成は禁じられます。
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+2. 禁止事項
+ユーザーは以下の行為を行ってはなりません：
+- 本ソフトウェアの複製、配布、販売または第三者への提供
+- 本ソフトウェアの改変、逆コンパイル、逆アセンブル、リバースエンジニアリング
+- 本ソフトウェアを用いた商用サービスの提供または商用利用（別途書面による許諾がある場合を除く）
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+3. 所有権
+本ソフトウェアに関する全ての著作権およびその他の知的財産権は著作権者等に帰属します。本ライセンスは著作権者等の権利を譲渡するものではありません。
+
+4. 保証の否認および責任の制限
+本ソフトウェアは現状有姿（AS IS）で提供され、明示または黙示のいかなる保証も行われません。著作権者等は、本ソフトウェアの使用または使用不能から生じるいかなる損害（特別損害、間接損害、付随的損害を含む）についても、一切責任を負わないものとします。ただし、適用法が許す最大限の範囲での制限に従います。
+
+5. 準拠法および裁判管轄
+本ライセンスは日本法に準拠します。本ライセンスに起因または関連する一切の紛争については、東京地方裁判所を専属的合意管轄裁判所とします。
