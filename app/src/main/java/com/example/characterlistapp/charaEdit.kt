@@ -44,10 +44,10 @@ class charaEdit: AppCompatActivity() {
         }
 
         // 2. UI要素の初期化
-        nameEditText = findViewById(R.id.edit_char_name) // 🚨 chara_edit_scene.xml の IDを確認
-        contentEditText = findViewById(R.id.edit_char_content) // 🚨 chara_edit_scene.xml の IDを確認
-        saveButton = findViewById(R.id.save_edit_button) // 🚨 chara_edit_scene.xml の IDを確認
-        deleteButton = findViewById(R.id.delete_character_button) // 🚨 chara_edit_scene.xml の IDを確認
+        nameEditText = findViewById(R.id.edit_char_name)
+        contentEditText = findViewById(R.id.edit_char_content)
+        saveButton = findViewById(R.id.save_edit_button)
+        deleteButton = findViewById(R.id.delete_character_button)
 
         // 3. 既存データの読み込みと表示
         loadCharacterData()

@@ -182,6 +182,7 @@ class OpenFile : AppCompatActivity() {
                 }
                 text = chara.name
                 textSize = 30f
+                setTextColor(resources.getColor(android.R.color.black))
                 setPadding(10, 5, 10, 5)
 
                 // 項目がタップされたときのリスナー
