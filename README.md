@@ -20,7 +20,7 @@ CharacterListApp は、キャラクターの一覧管理を目的としたシン
 
 ## 要望について
 
-バグ報告・機能要望は歓迎します。sr.nato710@gmail.com、もしくは、X(旧 Twitter)アカウント@nato71O に連絡ください。
+こちらからお願いします ([text](https://forms.office.com/r/rC7P3z15Mn))
 
 ## 次回アップデート予定内容
 
