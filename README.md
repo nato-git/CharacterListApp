@@ -20,7 +20,7 @@ CharacterListApp は、キャラクターの一覧管理を目的としたシン
 
 ## 要望について
 
-こちらからお願いします ([アンケート](https://forms.office.com/r/rC7P3z15Mn))
+こちらからお願いします [アンケート](https://forms.office.com/r/rC7P3z15Mn)
 
 ## 次回アップデート予定内容
 
