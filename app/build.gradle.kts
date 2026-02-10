@@ -1,5 +1,6 @@
+// app/build.gradle.kts
 plugins {
-    alias(libs.plugins.android.application)
+    alias(libs.plugins.android.application) // ← version "9.0.0" と書いてあったら消す
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.serialization)
 }
@@ -40,7 +41,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
 
     // 存在する正しい最新バージョン
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
