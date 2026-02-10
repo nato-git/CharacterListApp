@@ -15,6 +15,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import android.util.Log // デバッグ用に追加
+import android.view.View
 
 class OpenFile : AppCompatActivity() {
 
@@ -29,6 +30,7 @@ class OpenFile : AppCompatActivity() {
     private lateinit var newCharaNameEditText: EditText   // キャラ名入力 (XMLでは id="@id/NewTextName")
     private lateinit var newCharaContentEditText: EditText// 内容入力 (XMLでは id="@id/NewTextContent")
     private lateinit var confirmAddButton: Button         // 作成実行ボタン (XMLでは id="@id/NewCreateTextButton")
+    private lateinit var border: View
 
     // ボタン
     private lateinit var addButton: Button                // 新規追加トグルボタン (XMLでは id="@id/AddCharacterButton")
@@ -69,6 +71,7 @@ class OpenFile : AppCompatActivity() {
         newCharaNameEditText = findViewById(R.id.NewTextName)
         newCharaContentEditText = findViewById(R.id.NewTextContent)
         confirmAddButton = findViewById(R.id.NewCreateTextButton)
+        border = findViewById(R.id.border)
 
         addButton = findViewById(R.id.AddCharacterButton) // ＋ボタン
         backToListsButton = findViewById(R.id.BackButton) // ＜ボタン
@@ -110,6 +113,7 @@ class OpenFile : AppCompatActivity() {
         newCharaNameEditText.isVisible = isVisible
         newCharaContentEditText.isVisible = isVisible
         confirmAddButton.isVisible = isVisible
+        border.isVisible = isVisible
         findViewById<TextView>(R.id.Newcontent).isVisible = isVisible // "内容を作成" TextView
 
         if (isVisible) {

@@ -60,11 +60,13 @@ class MainActivity : AppCompatActivity() {
 
         createListLayout.isVisible = false
         createListButton.isVisible = false
+        newListNameEditText.isVisible = false
 
         // 2. 新規作成エリアの表示切り替え
         showCreateButton.setOnClickListener {
             createListLayout.isVisible = !createListLayout.isVisible
             createListButton.isVisible = !createListButton.isVisible
+            newListNameEditText.isVisible = !newListNameEditText.isVisible
             if (createListLayout.isVisible) {
                 newListNameEditText.setText("")
                 newListNameEditText.requestFocus()
