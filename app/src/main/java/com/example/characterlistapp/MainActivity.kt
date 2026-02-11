@@ -98,7 +98,8 @@ class MainActivity : AppCompatActivity() {
         if (newRowId > 0) {
             Toast.makeText(this, "'$listName' を作成しました。", Toast.LENGTH_SHORT).show()
             createListLayout.isVisible = false
-            createListButton.isVisible = !createListButton.isVisible
+            createListButton.isVisible = false
+            newListNameEditText.isVisible = false
             newListNameEditText.setText("")
             loadExistingLists()
         } else {
